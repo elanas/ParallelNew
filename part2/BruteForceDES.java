@@ -50,6 +50,11 @@ class BruteForceDES implements Runnable
 	// Byte arrays that hold key block
 	byte[] deskeyIN = new byte[8];
 	byte[] deskeyOUT = new byte[8];
+
+	int thread_id;
+	long loopCount;
+	SealedObject sldObj;
+	long start;
 		
 	// Constructor: initialize the cipher
 	public BruteForceDES () 
@@ -64,7 +69,16 @@ class BruteForceDES implements Runnable
 							   " Message: " + e.getMessage()) ; 
 		}
 	}
-	
+
+	public BruteForceDES (int thread_id, long loopCount, SealedObject sldObj, long start) {
+		super();
+
+		this.thread_id = thread_id;
+		this.loopCount = loopCount;
+		this.sldObj = sldObj;
+		this.start = start;
+
+	}
 	// Decrypt the SealedObject
 	//
 	//   arguments: SealedObject that holds on encrypted String
@@ -167,7 +181,7 @@ class BruteForceDES implements Runnable
 		Thread [] threads = new Thread[numThreads];
 
 		// create object to printf to the console
-		PrintStream p = new PrintStream(System.out);
+		// PrintStream p = new PrintStream(System.out);
 
 		// Get the argument
 		long keybits = Long.parseLong ( args[1] );
@@ -203,12 +217,11 @@ class BruteForceDES implements Runnable
 
 		//****PARALLEL CODE****
 
+		int partition = (int) ((maxkey + 1)/ numThreads);
+
 		for(int x = 0; x < numThreads; x++) {
-            // int threadFlips = d;
-            // if (x < r) {
-            //     threadFlips++;
-            // }
-            threads[x] = new Thread(new BruteForceDES());
+
+            threads[x] = new Thread(new BruteForceDES(x, partition, sldObj, runstart));
             threads[x].start();
         }
 
@@ -228,28 +241,28 @@ class BruteForceDES implements Runnable
 
 	public void run() {
 		// Create a simple cipher
-		BruteForceDES deccipher = new BruteForceDES ();
+		// BruteForceDES deccipher = new BruteForceDES ();
 		
-		// Search for the right key
-		for ( long i = 0; i < maxkey; i++ )
+		// // Search for the right key
+		for ( long i = thread_id*loopCount; i < thread_id*loopCount + loopCount; i++ )
 		{
 			// Set the key and decipher the object
-			deccipher.setKey ( i );
-			String decryptstr = deccipher.decrypt ( sldObj );
+			setKey ( i );
+			String decryptstr = decrypt ( sldObj );
 			
 			// Does the object contain the known plaintext
 			if (( decryptstr != null ) && ( decryptstr.indexOf ( "Hopkins" ) != -1 ))
 			{
 				//  Remote printlns if running for time.
-				p.printf("Found decrypt key %016x producing message: %s\n", i , decryptstr);
-				//System.out.println (  "Found decrypt key " + i + " producing message: " + decryptstr );
+				// p.printf("Found decrypt key %016x producing message: %s\n", i , decryptstr);
+				System.out.println (  "Found decrypt key " + i + " producing message: " + decryptstr );
 			}
 			
 			// Update progress every once in awhile.
 			//  Remote printlns if running for time.
 			if ( i % 100000 == 0 )
 			{ 
-				long elapsed = System.currentTimeMillis() - runstart;
+				long elapsed = System.currentTimeMillis() - start;
 				System.out.println ( "Searched key number " + i + " at " + elapsed + " milliseconds.");
 			}
 		}
