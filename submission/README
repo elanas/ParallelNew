@@ -1,0 +1,74 @@
+Assignment 2 - Parallel
+Elana Stroud
+estroud1
+
+-------------
+
+Part 1:
+
+For part 1, I have split the main program is held in CoinFlip.java. There are three
+bash scripts which represent the three different experiments that took place:
+speedup, scaleup and startup costs.
+
+The part1 directory contains a "make" file called make.sh. The make file is a bash script
+that will compile the CoinFlip.java program. The make file
+can be called with the following command:
+
+./make.sh
+
+In order to run an experiment, the particular bash file can be called with the 
+following commands:
+
+To collet data to measure speedup:
+./speedup_bash.sh
+
+To collet data to measure scaleup:
+./scaleup_bash.sh
+
+To collet data to measure startup costs:
+./startup_bash.sh
+
+*In order to record a meaningful
+time sample for startup costs, it would be helpful to open the CoinFlip.java program and comment
+out lines 69 and 93 (where time is recorded in milliseconds) and uncomment lines
+70 and 94 (where time is recorded in nanoseconds).
+
+The CoinFlip program can be run indepedently with the following code:
+
+./make.sh
+java CoinFlip #threads #flips
+
+Each experiment writes to a csv file called "output.csv" which
+holds the time-data recorded for the experiment. 
+
+
+Part 2:
+
+For part 2, the main program is called BruteForceDES.java. This 
+program's usage is below:
+
+Usage: BruteForceDES #threads key_size_in_bits
+
+In order to compile the program, there is a 'make' file called
+make.sh which can be called with the following command:
+
+./make.sh
+
+The program can be run with the following command:
+
+java BruteForceDES #threads key_size_in_bits
+
+One can also run the speedup or scaleup experiments by
+calling either:
+
+./speedup_bash.sh
+
+or
+
+./scaleup_bash.sh
+
+depending on which experiment you would like to write. Both 
+scripts save the time data to a csv called "output.csv".
+
+
+
