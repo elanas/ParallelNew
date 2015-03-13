@@ -186,7 +186,7 @@ class BruteForceDES implements Runnable
 		FileWriter f = null;
 
         try {
-            f = new FileWriter("speedup.csv", true);
+            f = new FileWriter("scaleup.csv", true);
             // f.append("Time, Test");
         } catch (Exception e) {
             System.out.println("file exception");
