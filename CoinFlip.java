@@ -13,7 +13,7 @@ public class CoinFlip implements Runnable {
 
     public void run ()
     {
-        System.out.println ( thread_id + ": Running thread with " + numThreadFlips + " flips." );
+        //System.out.println ( thread_id + ": Running thread with " + numThreadFlips + " flips." );
         for (int x = 0; x < numThreadFlips; x++) {
             if(flip() == 0) {
                 numHeads++;
