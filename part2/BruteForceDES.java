@@ -37,6 +37,7 @@ import javax.crypto.spec.*;
 import java.util.Random;
 
 import java.io.PrintStream;
+import java.io.FileWriter;
 
 
 class BruteForceDES implements Runnable
@@ -182,6 +183,14 @@ class BruteForceDES implements Runnable
 
 		// create object to printf to the console
 		// PrintStream p = new PrintStream(System.out);
+		FileWriter f = null;
+
+        try {
+            f = new FileWriter("speedup.csv", true);
+            // f.append("Time, Test");
+        } catch (Exception e) {
+            System.out.println("file exception");
+        }
 
 		// Get the argument
 		long keybits = Long.parseLong ( args[1] );
@@ -237,11 +246,17 @@ class BruteForceDES implements Runnable
 		long elapsed = System.currentTimeMillis() - runstart;
 		long keys = maxkey + 1;
 		System.out.println ( "Completed search of " + keys + " keys at " + elapsed + " milliseconds.");
+		try {
+			f.append(Long.toString(elapsed) + "\n");
+			f.flush();
+            f.close();
+		} catch (Exception e) {
+
+		}
 	}
 
 	public void run() {
 		// Create a simple cipher
-		// BruteForceDES deccipher = new BruteForceDES ();
 		
 		// // Search for the right key
 		for ( long i = thread_id*loopCount; i < thread_id*loopCount + loopCount; i++ )
