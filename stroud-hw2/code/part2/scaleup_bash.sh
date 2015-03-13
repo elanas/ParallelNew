@@ -1,13 +1,13 @@
 #!/bin/bash
 
-rm scaleup.csv
-javac BruteForceDES.java
+rm output.csv
+./make.sh
 
 #declare -i z=8
 
 for i in 0 1 2 3 4 
     do
-        echo -e "\n--- # Threads = $i ---\n" >> scaleup.csv  
+        echo -e "\n--- # Threads = $i ---\n" >> output.csv  
         for n in `seq 1 20`;
             do
                 declare -i t=2**$i

@@ -1,0 +1,126 @@
+Assignment 2 - Parallel
+Elana Stroud
+estroud1
+
+-------------
+
+My submission is laid out as follows:
+
+-code/
+-make.sh
+-README
+-solutions.pdf
+    -code/part1
+    -code/part2
+        -code/part1/CoinFlip.java
+        -code/part1/scaleup_bash.sh
+        -code/part1/speedup_bash.sh
+        -code/part1/startup_bash.sh
+        -code/part1/make.sh
+
+        -code/part2/BruteForceDES.java
+        -code/part2/make.sh
+        -code/part2/speedup_bash.sh
+        -code/part2/scaleup_bash.sh
+
+In the root directory of the submission the following command can be
+called to compile the programs for both part1 and part2:
+
+./make.sh
+
+-------------
+
+Part 1:
+
+For part1, the main program is held in CoinFlip.java. There are three
+bash scripts which represent the three different experiments that took place:
+speedup, scaleup and startup costs.
+
+The part1 directory contains a "make" file called make.sh. The make file is a bash script
+that will compile the CoinFlip.java program. The make file
+can be called with the following command:
+
+./make.sh
+
+In order to run an experiment, the particular bash file can be called with the 
+following commands in the part1 subdirectory:
+
+To collect data to measure speedup:
+./speedup_bash.sh
+
+To collect data to measure scaleup:
+./scaleup_bash.sh
+
+To collect data to measure startup costs:
+./startup_bash.sh
+
+*In order to record a meaningful
+time sample for startup costs, it would be helpful to open the CoinFlip.java program and comment
+out lines 69 and 93 (where time is recorded in milliseconds) and uncomment lines
+70 and 94 (where time is recorded in nanoseconds).
+
+The CoinFlip program can be run indepedently with the following code:
+
+./make.sh
+java CoinFlip #threads #flips
+
+Each experiment writes to a csv file called "output.csv" which
+holds the time-data recorded for the experiment. 
+
+-------------
+
+Part 2:
+
+For part2, the main program is called BruteForceDES.java. This 
+program's usage is below:
+
+Usage: BruteForceDES #threads key_size_in_bits
+
+In order to compile the program, there is a 'make' file called
+make.sh which can be called with the following command in
+the part2 subdirectory:
+
+./make.sh
+
+The program can be run with the following command:
+
+java BruteForceDES #threads key_size_in_bits
+
+One can also run the speedup or scaleup experiments by
+calling either:
+
+./speedup_bash.sh
+
+or
+
+./scaleup_bash.sh
+
+depending on which experiment you would like to write. Both 
+scripts save the data to a csv called "output.csv".
+
+-------------
+
+Design:
+
+I designed the CoinFlip.java program in parallel by partitioning the
+number of flips designated into equal subparts as based by the
+number of threads designated. Each thread calculates the total
+of heads flipped for its section and returns a value that is then
+added into a static global variable that remembers the over total number of
+heads flipped. This increment method is synchronized so that multiple
+threads are not accessing the static global variable at any one point.
+This interference could cause slight performance slowdown but nothing too
+significant as seen by the data collected.
+
+The BruteForceDES.java program was made to be parallel by taking the decrypt
+method and partitioning to the number of designated threads. Each thread forced
+on a particular part of the bit-key to search for the "Hopkins" messages.
+I intentionally avoided any shared variables or methods as to avoid runtime
+issues that would effect the maximum efficiency of the program.
+
+Both programs write the data to a csv called "output.csv" which records for
+every iteration of the program how much time was taken to complete carry out
+the particular task.
+
+
+

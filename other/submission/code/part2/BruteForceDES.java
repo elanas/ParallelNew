@@ -1,12 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-//    $Id: SealedDES.java,v 1.1 2008/09/10 20:21:47 randal Exp $
+//    $Id: BruteForceDES.java,v 1.1 2008/09/10 20:21:47 randal Exp $
 //
 //    Randal C. Burns
 //    Department of Computer Science
 //    Johns Hopkins University
 //
-//    $Source: /home/randal/repository/public_html/420/src/SealedDES.java,v $
+//    $Source: /home/randal/repository/public_html/420/src/BruteForceDES.java,v $
 //    $Date: 2008/09/10 20:21:47 $        
 //    $Revision: 1.1 $
 //
@@ -14,9 +14,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  class: SealedDES
+//  class: BruteForceDES
 //
-//  SealedDES encapsulates the DES encryption and decryption of Strings 
+//  BruteForceDES encapsulates the DES encryption and decryption of Strings 
 //  into SealedObjects.  It represesnts keys as integers (for simplicity).
 //  
 //  The main function gives and example of how to:
@@ -37,9 +37,10 @@ import javax.crypto.spec.*;
 import java.util.Random;
 
 import java.io.PrintStream;
+import java.io.FileWriter;
 
 
-class SealedDES
+class BruteForceDES implements Runnable
 {
 	// Cipher for the class
 	Cipher des_cipher;
@@ -50,9 +51,14 @@ class SealedDES
 	// Byte arrays that hold key block
 	byte[] deskeyIN = new byte[8];
 	byte[] deskeyOUT = new byte[8];
+
+	int thread_id;
+	long loopCount;
+	SealedObject sldObj;
+	long start;
 		
 	// Constructor: initialize the cipher
-	public SealedDES () 
+	public BruteForceDES () 
 	{
 		try 
 		{
@@ -64,7 +70,16 @@ class SealedDES
 							   " Message: " + e.getMessage()) ; 
 		}
 	}
-	
+
+	public BruteForceDES (int thread_id, long loopCount, SealedObject sldObj, long start) {
+		super();
+
+		this.thread_id = thread_id;
+		this.loopCount = loopCount;
+		this.sldObj = sldObj;
+		this.start = start;
+
+	}
 	// Decrypt the SealedObject
 	//
 	//   arguments: SealedObject that holds on encrypted String
@@ -158,23 +173,33 @@ class SealedDES
 	// Program demonstrating how to create a random key and then search for the key value.
 	public static void main ( String[] args )
 	{
-		if ( 1 != args.length )
+		if ( 2 != args.length )
 		{
-			System.out.println ("Usage: java SealedDES key_size_in_bits");
+			System.out.println ("Usage: BruteForceDES #threads key_size_in_bits");
 			return;
 		}
-		
+		int numThreads = Integer.parseInt(args[0]);
+		Thread [] threads = new Thread[numThreads];
+
 		// create object to printf to the console
-		PrintStream p = new PrintStream(System.out);
+		// PrintStream p = new PrintStream(System.out);
+		FileWriter f = null;
+
+        try {
+            f = new FileWriter("output.csv", true);
+            // f.append("Time, Test");
+        } catch (Exception e) {
+            System.out.println("file exception");
+        }
 
 		// Get the argument
-		long keybits = Long.parseLong ( args[0] );
+		long keybits = Long.parseLong ( args[1] );
 
 	    long maxkey = ~(0L);
 	    maxkey = maxkey >>> (64 - keybits);
 		
 		// Create a simple cipher
-		SealedDES enccipher = new SealedDES ();
+		BruteForceDES enccipher = new BruteForceDES ();
 		
 		// Get a number between 0 and 2^64 - 1
 		Random generator = new Random ();
@@ -198,38 +223,65 @@ class SealedDES
 		// Get and store the current time -- for timing
 		long runstart;
 		runstart = System.currentTimeMillis();
-		
+
+		//****PARALLEL CODE****
+
+		int partition = (int) ((maxkey + 1)/ numThreads);
+
+		for(int x = 0; x < numThreads; x++) {
+
+            threads[x] = new Thread(new BruteForceDES(x, partition, sldObj, runstart));
+            threads[x].start();
+        }
+
+        for (int x = 0; x < threads.length; x ++) {
+            try {
+                threads[x].join();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+		// Output search time
+		long elapsed = System.currentTimeMillis() - runstart;
+		long keys = maxkey + 1;
+		System.out.println ( "Completed search of " + keys + " keys at " + elapsed + " milliseconds.");
+		try {
+			f.append(Long.toString(elapsed) + "\n");
+			f.flush();
+            f.close();
+		} catch (Exception e) {
+
+		}
+	}
+
+	public void run() {
 		// Create a simple cipher
-		SealedDES deccipher = new SealedDES ();
 		
-		// Search for the right key
-		for ( long i = 0; i < maxkey; i++ )
+		// // Search for the right key
+		for ( long i = thread_id*loopCount; i < thread_id*loopCount + loopCount; i++ )
 		{
 			// Set the key and decipher the object
-			deccipher.setKey ( i );
-			String decryptstr = deccipher.decrypt ( sldObj );
+			setKey ( i );
+			String decryptstr = decrypt ( sldObj );
 			
 			// Does the object contain the known plaintext
 			if (( decryptstr != null ) && ( decryptstr.indexOf ( "Hopkins" ) != -1 ))
 			{
 				//  Remote printlns if running for time.
-				p.printf("Found decrypt key %016x producing message: %s\n", i , decryptstr);
-				//System.out.println (  "Found decrypt key " + i + " producing message: " + decryptstr );
+				// p.printf("Found decrypt key %016x producing message: %s\n", i , decryptstr);
+				System.out.println (  "Found decrypt key " + i + " producing message: " + decryptstr );
 			}
 			
 			// Update progress every once in awhile.
 			//  Remote printlns if running for time.
 			if ( i % 100000 == 0 )
 			{ 
-				long elapsed = System.currentTimeMillis() - runstart;
+				long elapsed = System.currentTimeMillis() - start;
 				System.out.println ( "Searched key number " + i + " at " + elapsed + " milliseconds.");
 			}
 		}
 		
-		// Output search time
-		long elapsed = System.currentTimeMillis() - runstart;
-		long keys = maxkey + 1;
-		System.out.println ( "Completed search of " + keys + " keys at " + elapsed + " milliseconds.");
 	}
 }
 
@@ -237,7 +289,7 @@ class SealedDES
 //
 //  Revsion History 
 //    
-//  $Log: SealedDES.java,v $
+//  $Log: BruteForceDES.java,v $
 //  Revision 1.1  2008/09/10 20:21:47  randal
 //  Initial checkin.
 //
