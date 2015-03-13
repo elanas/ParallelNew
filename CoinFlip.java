@@ -66,7 +66,7 @@ public class CoinFlip implements Runnable {
         int d = numFlips/numThreads;
         int r = numFlips%numThreads;
 
-        long t1 = System.nanoTime();
+        long t1 = System.currentTimeMillis();
 
 
         for(int x = 0; x < numThreads; x++) {
@@ -89,7 +89,7 @@ public class CoinFlip implements Runnable {
                 e.printStackTrace();
             }
         }
-        long t2 = System.nanoTime() - t1;
+        long t2 = System.currentTimeMillis() - t1;
 
         System.out.println("\n" + totalHeads + " heads in " + numFlips + " coin tosses.");
         System.out.println("Total elapsed time: " + t2 + "ms");
