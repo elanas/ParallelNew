@@ -66,6 +66,9 @@ public class CoinFlip implements Runnable {
         int d = numFlips/numThreads;
         int r = numFlips%numThreads;
 
+        long t1 = System.nanoTime();
+
+
         for(int x = 0; x < numThreads; x++) {
             int threadFlips = d;
             if (x < r) {
@@ -78,7 +81,6 @@ public class CoinFlip implements Runnable {
         
         int heads = 0;
 
-        long t1 = System.nanoTime();
         for (int x = 0; x < threads.length; x ++) {
             try {
                 // heads += threads[x].getHeads();
