@@ -46,7 +46,7 @@ public class CoinFlip implements Runnable {
         FileWriter f = null;
 
         try {
-            f = new FileWriter("speedup.csv", true);
+            f = new FileWriter("startup.csv", true);
             // f.append("Time, Test");
         } catch (Exception e) {
             System.out.println("file exception");
@@ -78,7 +78,7 @@ public class CoinFlip implements Runnable {
         
         int heads = 0;
 
-        long t1 = System.currentTimeMillis();
+        long t1 = System.nanoTime();
         for (int x = 0; x < threads.length; x ++) {
             try {
                 // heads += threads[x].getHeads();
@@ -87,7 +87,7 @@ public class CoinFlip implements Runnable {
                 e.printStackTrace();
             }
         }
-        long t2 = System.currentTimeMillis() - t1;
+        long t2 = System.nanoTime() - t1;
 
         System.out.println("\n" + totalHeads + " heads in " + numFlips + " coin tosses.");
         System.out.println("Total elapsed time: " + t2 + "ms");
